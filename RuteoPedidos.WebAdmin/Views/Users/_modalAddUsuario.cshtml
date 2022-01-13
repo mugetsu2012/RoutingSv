@@ -1,0 +1,68 @@
+﻿@model CrearUsuarioVm
+@{
+    Layout = null;
+
+    //Saco la cuenta claim del user
+    string cuentaClaim = User.Claims.FirstOrDefault(x => x.Type == "idCuenta")?.Value;
+    int idCuenta = string.IsNullOrEmpty(cuentaClaim) ? 0 : int.Parse(cuentaClaim);
+}
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Agregar nueva usuario</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                <i class="material-icons">clear</i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card ">
+                        <div class="card-header card-header-rose card-header-icon">
+                            <div class="card-icon">
+                                <i class="material-icons">people</i>
+                            </div>
+                        </div>
+                        <div class="card-body ">
+                            <form asp-controller="Cuenta" asp-action="CrearModificarUsuario" method="post" id="frmAaddUser">
+                                <div class="form-group">
+                                    <label asp-for="Nombre" class="bmd-label-floating">Nombre</label>
+                                    <input asp-for="Nombre" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Apellido" class="bmd-label-floating">Apellido</label>
+                                    <input asp-for="Apellido" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Email" class="bmd-label-floating">Email</label>
+                                    <input asp-for="Email" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="IdUsuario" class="bmd-label-floating">Usuario</label>
+                                    <input asp-for="IdUsuario" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="PasswordText" class="bmd-label-floating">Password</label>
+                                    <input asp-for="PasswordText" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="IdCuenta" class="bmd-label-floating">Cuenta</label>
+                                    <input asp-for="IdCuenta" type="number" class="form-control" value="@idCuenta">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="IdMotorista" class="bmd-label-floating">Motorista (opcional)</label>
+                                    <input asp-for="IdMotorista" type="text" class="form-control">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer ">
+                            <button type="button" class="btn btn-fill btn-success" id="btnAgregarUsuario">Guardar</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

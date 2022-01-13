@@ -1,0 +1,129 @@
+﻿@model List<RuteoPedidos.Core.Model.Tareas.Tarea>
+
+@{
+    ViewBag.Title = "Listado Tareas";
+}
+
+
+<div class="container-fluid">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon card-header-rose">
+                        <div class="card-icon">
+                            <i class="material-icons">assignment</i>
+                        </div>
+                        <h4 class="card-title ">Tareas</h4>
+                    </div>
+                    <br />
+                    <div class="card-body">
+                        <button class="btn btn-info" id="btnAddTarea">
+                            <i class="material-icons">playlist_add</i> Nueva tarea
+                        </button>
+                        <br />
+                        <br />
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead class=" text-primary">
+                                <th>
+                                    Destino
+                                </th>
+                                <th>
+                                    Detalle
+                                </th>
+                                <th>
+                                    Estado
+                                </th>
+                                <th>
+                                    Latitud
+                                </th>
+                                <th>
+                                    Longitud
+                                </th>
+                                <th>
+                                    Motorista
+                                </th>
+                                </thead>
+                                <tbody>
+                                    @foreach (var tarea in Model)
+                                    {
+                                        <tr>
+                                            <td>@tarea.DestinoCliente</td>
+                                            <td>@tarea.DetalleTarea</td>
+                                            <td>@tarea.TextoEstadoTarea</td>
+                                            <td>@tarea.LatitudUbicacion</td>
+                                            <td>@tarea.LongitudUbicacion</td>
+                                            <td>
+                                                @if (tarea.Motorista != null)
+                                                {
+                                                    @Html.Raw(tarea.Motorista.NombreCompleto)
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <partial name="_modalAddTarea" model="new CrearTareaVm() "/>
+</div>
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+
+            $(document).on('click', '#btnAddTarea', function(e) {
+                $("#myModal").modal('show');
+            });
+
+            $(document).on('click', '#btnAgregarTarea', function(e) {
+                e.preventDefault();
+
+                Swal.fire('Espere');
+                Swal.showLoading();
+
+                //TODO:  Valido si el form esta bien
+
+                //Ahora que el form esta bien, envio la data
+                var $formAddTarea = $("#frmAddTarea");
+                var url = $formAddTarea.attr('action');
+                var method = $formAddTarea.attr('method');
+                var data = $formAddTarea.serialize();
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: data,
+                    success: function (data) {
+                        if (data.exito) {
+                            $('#modalLoad').modal('hide');
+                            //Como fue exitoso le muestro un swal y recargo la pagina
+                            swal({
+                                    title: "Exito!",
+                                    text: "La tarea fue guardada correctamente",
+                                    buttonsStyling: false,
+                                    confirmButtonClass: "btn btn-success",
+                                    type: "success"
+                            })
+                                .then(function () {
+                                    location.reload();
+                                })
+                                .catch(swal.noop);
+
+                        }
+                    }
+                })
+            });
+
+        });
+    </script>
+}

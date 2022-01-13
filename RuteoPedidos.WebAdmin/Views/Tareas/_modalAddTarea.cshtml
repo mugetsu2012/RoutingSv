@@ -1,0 +1,72 @@
+﻿@model CrearTareaVm
+@{
+    Layout = null;
+
+    //Saco la cuenta claim del user
+    string cuentaClaim = User.Claims.FirstOrDefault(x => x.Type == "idCuenta")?.Value;
+    int idCuenta = string.IsNullOrEmpty(cuentaClaim) ? 0 : int.Parse(cuentaClaim);
+}
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Agregar nueva tarea</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                <i class="material-icons">clear</i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card ">
+                        <div class="card-header card-header-rose card-header-icon">
+                            <div class="card-icon">
+                                <i class="material-icons">playlist_add</i>
+                            </div>
+                        </div>
+                        <div class="card-body ">
+                            <form asp-controller="Tareas" asp-action="GuardarTarea" method="post" id="frmAddTarea">
+                                <div class="form-group">
+                                    <label asp-for="DestinoCliente" class="bmd-label-floating">Destino Cliente</label>
+                                    <input asp-for="DestinoCliente" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="DetalleTarea" class="bmd-label-floating">Detalle</label>
+                                    <textarea asp-for="DetalleTarea" type="text" class="form-control" cols="4" rows="5"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="LatitudUbicacion" class="bmd-label-floating">Latitud</label>
+                                    <input asp-for="LatitudUbicacion" type="number" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="LongitudUbicacion" class="bmd-label-floating">Longitud</label>
+                                    <input asp-for="LongitudUbicacion" type="number" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="IdCuenta" class="bmd-label-floating">Cuenta</label>
+                                    <input asp-for="IdCuenta" type="number" class="form-control" value="@idCuenta">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="IdMotorista" class="bmd-label-floating">Motorista</label>
+                                    <input asp-for="IdMotorista" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="Indicaciones" class="bmd-label-floating">Indicaciones</label>
+                                    <input asp-for="Indicaciones" type="text" class="form-control">
+                                </div>
+                                <div class="form-group">
+                                    <label asp-for="TelefonoContacto" class="bmd-label-floating">Telefono</label>
+                                    <input asp-for="TelefonoContacto" type="text" class="form-control">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="card-footer ">
+                            <button type="button" class="btn btn-fill btn-success" id="btnAgregarTarea">Guardar</button>
+                            <button type="button" class="btn btn-danger" data-dismiss="modal">Cancelar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

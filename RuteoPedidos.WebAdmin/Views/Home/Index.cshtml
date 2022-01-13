@@ -1,0 +1,237 @@
+﻿@using RuteoPedidos.Core.Model
+@using Newtonsoft.Json
+@model List<RuteoPedidos.Core.DTO.Output.Tareas.DashboardOuputDto>
+@{
+    ViewData["Title"] = "Dashboard";
+    int codigoPrimerMotorista = Model.Any() ? Model.First().IdMotorista : 0;
+    string coordenadasPrimerElemento = JsonConvert.SerializeObject(Model.FirstOrDefault()?.TareasMotorista.First().PuntosRuteo);
+    string nombreMotoristaPrimero = Model.FirstOrDefault()?.NombreMotorista;
+    string nombreTareaPrimera = Model.FirstOrDefault()?.TareasMotorista.FirstOrDefault()?.DestinoCliente;
+}
+
+<link href="~/js/plugins/leaflet/leaflet.css" rel="stylesheet" />
+
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card ">
+
+            <div class="card-header card-header-text card-header-rose">
+                <div class="card-text">
+                    <h4 class="card-title">Motoristas</h4>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card card-nav-tabs card-plain">
+                    <div class="card-header card-header-info">
+                        <!-- colors: "header-primary", "header-info", "header-success", "header-warning", "header-danger" -->
+                        <div class="nav-tabs-navigation">
+                            <div class="nav-tabs-wrapper">
+                                <ul class="nav nav-tabs" data-tabs="tabs">
+                                    @foreach (var dashboardOuput in Model)
+                                    {
+                                        <li class="nav-item">
+                                            <a class="nav-link" data-nombremot="@dashboardOuput.NombreMotorista" 
+                                               data-coordenadasprimaria="@JsonConvert.SerializeObject(dashboardOuput.TareasMotorista.FirstOrDefault()?.PuntosRuteo)" 
+                                               data-nombretareadefecto="@dashboardOuput.TareasMotorista.FirstOrDefault()?.DestinoCliente"
+                                               data-latmotorista="@dashboardOuput.LatitudMotorista"
+                                               data-longmotorista="@dashboardOuput.LongitudMotorista"
+                                               condition-class-active="@dashboardOuput.IdMotorista == codigoPrimerMotorista" 
+                                               href="#idmapa-@dashboardOuput.IdMotorista" data-toggle="tab">@dashboardOuput.NombreMotorista</a>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    </div><div class="card-body ">
+                              <div class="tab-content text-center">
+                                  <div id="satelliteMap" class="map map-big"></div>
+                                  @foreach (var dashboardOuput in Model)
+                                  {
+                                      <div class="tab-pane" id="idmapa-@dashboardOuput.IdMotorista" condition-class-active="@dashboardOuput.IdMotorista == codigoPrimerMotorista">
+                                          <h4 class="card-title"></h4>
+
+                                          <br />
+                                          <div class="table-responsive table-hover">
+                                              <table class="table">
+                                                  <thead class=" text-primary">
+                                                  <th>
+                                                      Destino
+                                                  </th>
+                                                  <th>
+                                                      Detalle
+                                                  </th>
+                                                  <th>
+                                                      Estado
+                                                  </th>
+                                                  <th>
+                                                      Latitud
+                                                  </th>
+                                                  <th>
+                                                      Longitud
+                                                  </th>
+                                                  </thead>
+                                                  <tbody>
+                                                      @foreach (var tarea in dashboardOuput.TareasMotorista)
+                                                      {
+                                                          <tr style="outline: thin solid; cursor: pointer" 
+                                                              class="trMapa" 
+                                                              data-coordenadas="@JsonConvert.SerializeObject(tarea.PuntosRuteo)" 
+                                                              data-nombretarea="@tarea.DestinoCliente"
+                                                              data-nombremotorista="@dashboardOuput.NombreMotorista"
+                                                              condition-class-table-success="@(tarea.EstadoTarea==EstadoTarea.Finalizada)" 
+                                                              condition-class-table-danger="@(tarea.EstadoTarea==EstadoTarea.Pendiente)">
+                                                              <td>@tarea.DestinoCliente</td>
+                                                              <td>@tarea.DetalleTarea</td>
+                                                              <td>@tarea.EstadoTarea</td>
+                                                              <td>@tarea.LatitudUbicacion</td>
+                                                              <td>@tarea.LongitudUbicacion</td>
+                                                          </tr>
+                                                      }
+                                                  </tbody>
+                                              </table>
+                                          </div>
+                                      </div>
+                                  }
+                              </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<input type="hidden" id="coordenadasPrimerElemento" value="@coordenadasPrimerElemento"/>
+<input type="hidden" id="nombreMotoristaPrimero" value="@nombreMotoristaPrimero"/>
+<input type="hidden" id="nombreTareaPrimera" value="@nombreTareaPrimera"/>
+
+<script src="~/js/plugins/leaflet/leaflet.js"></script>
+@section Scripts
+{
+    <script>
+        // setup a marker group
+
+        $(document).ready(function(e) {
+            $('a[data-toggle="tab"]').on('shown.bs.tab',
+                function(e) {
+                    e.target // newly activated tab
+                    e.relatedTarget // previous active tab
+
+                    //Limpiamos el mapa
+                    objetoMap.clearMap();
+
+                    //Dibujamos la nueva ruta
+                    var coordPrimarias = $(e.target).data('coordenadasprimaria');
+                    var nombreTareaDefecto = $(e.target).data('nombretareadefecto');
+                    var nombreMotorista = $(e.target).data('nombremot');
+
+                    //Si hay coordenadas primarias y tiene tareas
+                    if (coordPrimarias != null && nombreTareaDefecto !== "" && nombreTareaDefecto != null) {
+                        objetoMap.dibujarPoligono(coordPrimarias);
+
+                        //Agrego markar para tarea
+                        objetoMap.agregarMarker(coordPrimarias[coordPrimarias.length - 1], nombreTareaDefecto);
+
+                        //Agregamos markes para el inicio 
+                        objetoMap.agregarMarker(coordPrimarias[0], nombreMotorista);
+                    } else {
+                        //Como no tiene tareas, coloco solo el marker para el motorista
+                        var latitudMotorista = parseFloat($(this).data('latmotorista'));
+                        var longitudMotorista = parseFloat($(this).data('longmotorista'));
+                        var coordMot = [latitudMotorista, longitudMotorista];
+                        objetoMap.agregarMarker(coordMot, nombreMotorista, true);
+                    }
+                });
+
+            $('.trMapa').on('click',
+                function(e) {
+                    var coord = $(this).data('coordenadas');
+                    var nombreTarea = $(this).data('nombretarea');
+                    var nombreMotorista = $(this).data('nombremotorista');
+                    objetoMap.clearMap();
+                    objetoMap.dibujarPoligono(coord);
+                    //Agregamos markes para el inicio y fin
+                    objetoMap.agregarMarker(coord[0], nombreMotorista);
+                    objetoMap.agregarMarker(coord[coord.length - 1], nombreTarea);
+                });
+
+            objetoMap.inicio();
+
+        });
+
+        var objetoMap = {
+            map: L.map('satelliteMap').setView([13.6894, -89.2198], 15),
+            polylines: [],
+            markers: [],
+            inicio() {
+                L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
+                    {
+                        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                        maxZoom: 18,
+                        id: 'mapbox/streets-v11',
+                        tileSize: 512,
+                        zoomOffset: -1,
+                        accessToken: 'pk.eyJ1IjoiZG9ydGl6OTQxNyIsImEiOiJja2FycnNjOWUwajFiMnFteDhubWlrZWx6In0.Ytqbb6I5uEnYRjnW4dEyBA'
+                    }).addTo(this.map);
+
+                var puntosPrimerElemento = JSON.parse($("#coordenadasPrimerElemento").val());
+                var nombreMotoristaPrimero = $("#nombreMotoristaPrimero").val();
+                var nombreTareaPrimera = $("#nombreTareaPrimera").val();
+                this.dibujarPoligono(puntosPrimerElemento);
+
+                //Agregamos markes para el inicio y fin
+                this.agregarMarker(puntosPrimerElemento[0], nombreMotoristaPrimero);
+                this.agregarMarker(puntosPrimerElemento[puntosPrimerElemento.length - 1], nombreTareaPrimera);
+            },
+            dibujarPoligono(puntos) {
+
+                //Dibujamos por defecto la ruta del primer motorista de la primer tarea
+                var polyline = L.polyline(puntos, { color: 'blue' }).addTo(this.map);
+                this.map.fitBounds(polyline.getBounds());
+            },
+            agregarMarker(punto, texto, centrarEnMarker) {
+                var marker = L.marker(punto).addTo(this.map);
+
+                if (texto) {
+                    marker.bindPopup("<b>" + texto + "</b>", { closeOnClick: false, autoClose: false }).openPopup();
+                }
+
+                this.markers.push(marker);
+
+                if (centrarEnMarker) {
+                    var latLngs = [ marker.getLatLng() ];
+                    var markerBounds = L.latLngBounds(latLngs);
+                    this.map.fitBounds(markerBounds);
+                }
+
+            },
+            clearMap() {
+                var self = this;
+                //Eliminamos los markers 
+                $.each(this.markers,
+                    function(index, value) {
+                        self.map.removeLayer(value);
+                    });
+
+                for (i in this.map._layers) {
+                    if (this.map._layers[i]._path != undefined) {
+                        try {
+                            this.map.removeLayer(this.map._layers[i]);
+                        } catch (e) {
+                            console.log("problem with " + e + this.map._layers[i]);
+                        }
+                    }
+                }
+            },
+            clickEvent: function eventoClick(e) {
+
+            }
+
+        }
+
+    </script>
+}
+
+

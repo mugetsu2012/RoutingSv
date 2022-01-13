@@ -1,0 +1,138 @@
+﻿@model List<RuteoPedidos.Core.Model.Usuario>
+@{
+    ViewBag.Title = "Usuarios";
+}
+
+
+<div class="container-fluid">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header card-header-icon card-header-rose">
+                        <div class="card-icon">
+                            <i class="material-icons">people</i>
+                        </div>
+                        <h4 class="card-title ">Usuarios</h4>
+                    </div>
+                    <br />
+                    <div class="card-body">
+                        <button class="btn btn-info" id="btnMostrarModalUser">
+                            <i class="material-icons">people</i> Nuevo usuario
+                        </button>
+                        <br />
+                        <br />
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead class=" text-primary">
+                                <th>
+                                    Nombre
+                                </th>
+                                <th>
+                                    Apellido
+                                </th>
+                                <th>
+                                    Usuario
+                                </th>
+                                <th>
+                                    Email
+                                </th>
+                                <th>
+                                    Fecha ingreso
+                                </th>
+                                <th>
+                                    Cuenta
+                                </th>
+                                <th>
+                                    Estado
+                                </th>
+                                </thead>
+                                <tbody>
+                                    @foreach (var usuario in Model)
+                                    {
+                                        <tr>
+                                            <td>@usuario.Nombre</td>
+                                            <td>@usuario.Apellido</td>
+                                            <td>@usuario.IdUsuario</td>
+                                            <td>@usuario.Email</td>
+                                            <td>@usuario.FechaIngreso.ToString("dd-MM-yyyy")</td>
+                                            <td>@usuario.Cuenta.NombreCuenta (@usuario.IdCuenta)</td>
+                                            <td>
+                                                @if (usuario.Activo)
+                                                {
+                                                    @Html.Raw("Activo")
+                                                }
+                                                else
+                                                {
+                                                    @Html.Raw("Inactivo")
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalUsuario" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <partial name="_modalAddUsuario" model="new CrearUsuarioVm()" />
+</div>
+
+
+
+@section Scripts
+{
+    <script>
+        $(document).ready(function() {
+
+            $(document).on('click', '#btnMostrarModalUser', function(e) {
+                $("#modalUsuario").modal('show');
+            });
+
+            $(document).on('click', '#btnAgregarUsuario', function(e) {
+                e.preventDefault();
+
+                Swal.fire('Espere');
+                Swal.showLoading();
+
+                //TODO:  Valido si el form esta bien
+
+                //Ahora que el form esta bien, envio la data
+                var $formAddUser = $("#frmAaddUser");
+                var url = $formAddUser.attr('action');
+                var method = $formAddUser.attr('method');
+                var data = $formAddUser.serialize();
+
+                $.ajax({
+                    url: url,
+                    type: method,
+                    data: data,
+                    success: function (data) {
+                        if (data.exito) {
+                            $('#modalLoad').modal('hide');
+                            //Como fue exitoso le muestro un swal y recargo la pagina
+                            swal({
+                                    title: "Exito!",
+                                    text: "El usuario fue guardado correctamente!",
+                                    buttonsStyling: false,
+                                    confirmButtonClass: "btn btn-success",
+                                    type: "success"
+                                })
+                                .then(function () {
+                                    location.reload();
+                                })
+                                .catch(swal.noop);
+
+                        }
+                    }
+                })
+            });
+
+        });
+    </script>
+}
